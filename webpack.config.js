@@ -6,16 +6,22 @@ const htmlPlugin = require('html-webpack-plugin');
 const extractTextPlugin = require('extract-text-webpack-plugin');
 //const purifyCssPlugin = require('purifycss-webpack');
 const PurifyCSSPlugin = require("purifycss-webpack"); //打包时消除没有使用的css
+const entry = require('./webpack_config/entry_webpack'); //引入项目的入口文件
 
-let website = {
-    publicPath: "http://172.30.67.118:1717/"
+//console.log(encodeURIComponent(process.env.type));
+if (process.env.type == "build") {
+    var website = {
+        publicPath: "http://jianshe.com"
+    }
+} else {
+    var website = {
+        publicPath: "http://172.30.67.118:1717/"
+    }
 }
 
 module.exports = {
     devtool: 'eval-source-map',
-    entry: {
-        entry: './src/entry.js'
-    },
+    entry: entry.path,
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
