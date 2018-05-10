@@ -7,6 +7,8 @@ const extractTextPlugin = require('extract-text-webpack-plugin');
 //const purifyCssPlugin = require('purifycss-webpack');
 const PurifyCSSPlugin = require("purifycss-webpack"); //打包时消除没有使用的css
 const entry = require('./webpack_config/entry_webpack'); //引入项目的入口文件
+const copyWebpackPlugin = require("copy-webpack-plugin");
+
 
 //console.log(encodeURIComponent(process.env.type));
 if (process.env.type == "build") {
@@ -21,7 +23,13 @@ if (process.env.type == "build") {
 
 module.exports = {
     devtool: 'eval-source-map',
-    entry: entry.path,
+    //entry: entry.path,
+    //抽离第三方引入库的方法：1.修改入口文件。2.引入插件（CommonsChunkPlugins）
+    entry: {
+        entry: './src/entry.js',
+        jquery: 'jquery',
+        vue: 'vue'
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
@@ -108,6 +116,15 @@ module.exports = {
         ]
     },
     plugins: [
+        new webpack.optimize.CommonsChunkPlugin({ //抽离第三方引入库的插件
+            name: ['jquery', 'vue'],
+            filename: 'assets/js/[name].js',
+            minChunks: 2
+        }),
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            "vue": "vue"
+        }),
         //new uglify()
         new htmlPlugin({
             minify: {
@@ -120,7 +137,13 @@ module.exports = {
         new PurifyCSSPlugin({
             // Give paths to parse for rules. These should be absolute!
             paths: glob.sync(path.join(__dirname, 'src/*.html')),
-        })
+        }),
+        new webpack.BannerPlugin('jianshe 版权所有'),
+        new copyWebpackPlugin([{
+            from: __dirname + '/src/public',
+            to: './public'
+        }]),
+        new webpack.HotModuleReplacementPlugin()
     ],
     devServer: {
         //设置基本目录结构
@@ -128,5 +151,10 @@ module.exports = {
         host: '172.30.67.118',
         compress: true,
         port: 1717
+    },
+    watchOptions: {
+        poll: 1000, //监测修改的时间以毫秒为单位
+        aggregateTimeout: 500, //ageregeatetimeout
+        ignored: /node_modules/
     }
 }
